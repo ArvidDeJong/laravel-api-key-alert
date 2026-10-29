@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [1.0.0] - 2026-10-29
+
 ### Added
 - First release. Set `API_KEY_ALERT_MAIL_TO` to get a mail when an API key is rejected, and one when
   it works again.
@@ -20,3 +22,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 - `ApiKeyFailed` and `ApiKeyRecovered` events.
 - Mails in English and Dutch.
 - Laravel Boost guideline and skill.
+
+[Unreleased]: https://github.com/ArvidDeJong/laravel-api-key-alert/compare/v1.0.0...HEAD
+[1.0.0]: https://github.com/ArvidDeJong/laravel-api-key-alert/releases/tag/v1.0.0
