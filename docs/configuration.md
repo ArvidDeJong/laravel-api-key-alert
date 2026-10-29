@@ -17,7 +17,8 @@ All options have an environment variable, so most apps never publish the config.
 | `API_KEY_ALERT_DETECT_HTTP` | `true` | Inspect Http client responses. |
 | `API_KEY_ALERT_DETECT_EXCEPTIONS` | `true` | Inspect reported exceptions. |
 | `API_KEY_ALERT_CHECK` | `false` | Schedule the [daily check](daily-check.md). |
-| `API_KEY_ALERT_CHECK_TIME` | `07:00` | Time of the daily check. |
+| `API_KEY_ALERT_CHECK_TIME` | `07:00` | Time of the daily check and the environment check. |
+| `API_KEY_ALERT_ENVIRONMENT_CHECK` | `false` | Schedule the [environment check](environment-check.md). |
 
 ## Services
 
@@ -45,6 +46,22 @@ Each service has a name (used in the mail and the events) and up to four setting
 
 The package ships `anthropic`, `google`, `messagebird`, `mollie` and `openai`. To add your own, see
 [Adding a service](custom-services.md).
+
+## Environment check
+
+```php
+'environment' => [
+    'check' => (bool) env('API_KEY_ALERT_ENVIRONMENT_CHECK', false),
+    'expected' => [
+        'app.debug' => false,
+        'app.env' => 'production',
+    ],
+],
+```
+
+`expected` maps a config key to the value it must have on the server where the check is on. The
+comparison is strict, so `false` and `"false"` are not the same. The alert uses the service name
+`environment`; don't configure a service with that name. See [Environment check](environment-check.md).
 
 ## Where the state lives
 

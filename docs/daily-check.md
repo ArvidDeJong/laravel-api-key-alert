@@ -15,7 +15,8 @@ API_KEY_ALERT_CHECK_TIME=07:00
 ```
 
 The check is added to the scheduler, so `schedule:run` has to run every minute (on Plesk: a
-Scheduled Task that runs `artisan schedule:run`).
+Scheduled Task that runs `artisan schedule:run`). The [environment check](environment-check.md) runs
+in the same scheduled command, at the same time.
 
 ## The keys it uses
 
@@ -29,20 +30,50 @@ nothing is checked until you set one.
 | `mollie` | `MOLLIE_KEY` | `GET /v2/methods` |
 | `openai` | `OPENAI_API_KEY` | `GET /v1/models` |
 
-If your app uses a different variable, publish the config and change it:
+## When your key has a different name
+
+Most apps already have the key in their own config, for example `config/services.php`:
+
+```php
+'google' => [
+    'key_php' => env('GOOGLE_KEY_PHP'),
+],
+```
+
+Point the check at that config key with `config:`. The value is read when the check runs, so the key
+is written down once. The easiest place is the `boot()` method of `app/Providers/AppServiceProvider.php`;
+you don't have to publish anything:
+
+```php
+public function boot(): void
+{
+    config([
+        'api-key-alert.services.google.check.query.key' => 'config:services.google.key_php',
+    ]);
+}
+```
+
+If you have published `config/api-key-alert.php`, write it there instead:
 
 ```php
 'google' => [
     'check' => [
-        'query' => ['address' => 'Amsterdam', 'key' => env('GOOGLE_KEY_PHP')],
+        'query' => ['address' => 'Amsterdam', 'key' => 'config:services.google.key_php'],
         'url' => 'https://maps.googleapis.com/maps/api/geocode/json',
     ],
     // ...
 ],
 ```
 
+`env('GOOGLE_KEY_PHP')` works there too. Keep in mind that a published config replaces the whole
+`services` list: a service that a later version of the package adds does not appear in your app
+until you add it yourself. That is why the `boot()` way above is the better default.
+
+## What a check can contain
+
 A check takes `url`, and optionally `method` (default `GET`), `query`, `headers` and `token` (sent as
-a bearer token). An empty value in any of them skips the check.
+a bearer token). Every value can be text, `env(...)` or a `config:` reference. An empty value in any
+of them skips the check, so nothing is checked until the key is set.
 
 ## Run it by hand
 

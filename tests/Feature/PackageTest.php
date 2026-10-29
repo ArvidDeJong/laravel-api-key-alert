@@ -57,6 +57,22 @@ it('skips a check whose key is empty', function () {
     ]);
 });
 
+it('reads a check value from the app config when it starts with config:', function () {
+    config([
+        'api-key-alert.services.google.check.query.key' => 'config:services.google.key_php',
+        'api-key-alert.services.openai.check.token' => 'config:services.openai.key',
+    ]);
+
+    // Not set yet: the check is skipped, as with an empty environment variable.
+    expect(ApiKeyAlertConfig::check('google'))->toBeNull()
+        ->and(ApiKeyAlertConfig::check('openai'))->toBeNull();
+
+    config(['services.google.key_php' => 'AIza-from-config', 'services.openai.key' => 'sk-from-config']);
+
+    expect(ApiKeyAlertConfig::check('google')['query']['key'])->toBe('AIza-from-config')
+        ->and(ApiKeyAlertConfig::check('openai')['token'])->toBe('sk-from-config');
+});
+
 it('falls back to the default check time when the value is not a time', function () {
     config(['api-key-alert.check.time' => 'tomorrow']);
 

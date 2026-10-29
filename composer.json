@@ -1,6 +1,6 @@
 {
     "name": "darvis/laravel-api-key-alert",
-    "description": "Get an email the moment an API key stops working in Laravel: detects rejected keys in Http client calls, reported exceptions, wrapped calls and a daily check, for Google, OpenAI, Anthropic, Mollie and any API you add.",
+    "description": "Get an email the moment an API key stops working in Laravel: detects rejected keys in Http client calls, reported exceptions, wrapped calls and a daily check, for Google, OpenAI, Anthropic, Mollie and any API you add. Also reminds you daily while APP_DEBUG or APP_ENV is wrong on a server.",
     "type": "library",
     "license": "MIT",
     "homepage": "https://arviddejong.github.io/laravel-api-key-alert/",
@@ -11,6 +11,8 @@
         "alert",
         "notification",
         "health-check",
+        "app-debug",
+        "environment",
         "google-maps",
         "openai",
         "mollie",

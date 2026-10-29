@@ -49,6 +49,33 @@
     the API signals a rejected key differently, write a class that implements the Detector interface
     and set it as the service's detector.
 
+- q: My API key has a different environment variable. What do I change?
+  a: >
+    Nothing for passive detection, which looks at the responses and not at the key. For the daily
+    check, point the check at the config key your app already uses, in the boot() method of
+    AppServiceProvider, for example config(['api-key-alert.services.google.check.query.key' =>
+    'config:services.google.key_php']). There is no need to publish the config or to repeat the key
+    in .env.
+
+- q: Can it warn me when APP_DEBUG is still on in production?
+  a: >
+    Yes. Set API_KEY_ALERT_ENVIRONMENT_CHECK=true in the .env of that server. Once a day the package
+    compares app.debug and app.env with the expected values from the config (false and production
+    by default) and mails you every day they are wrong, plus once more when they are right again.
+    Any config key can be added to the list.
+
+- q: How do I see which keys are down right now?
+  a: >
+    Run php artisan api-key-alert:status. It reads the cache, so it costs no API calls, and it
+    exits with a failure when a key is down. Add --json for a dashboard or a monitoring tool. In
+    code, ApiKeyAlert::failure('google') gives the reason and the time it was first rejected.
+
+- q: How do I know the mail works at all?
+  a: >
+    Run php artisan api-key-alert:test. It sends a test alert and a test recovery mail to the
+    configured address straight away, without the cache, the throttle or the queue, so nothing is
+    left behind.
+
 - q: Can I get the alert in Slack instead of by mail?
   a: >
     Listen to the ApiKeyFailed and ApiKeyRecovered events and send it wherever you like. Leave

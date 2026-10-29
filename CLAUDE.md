@@ -12,7 +12,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Architecture
 
-- [ApiKeyAlertManager](src/ApiKeyAlertManager.php) is a singleton and holds every decision: `failed()` and `recovered()` are the only paths to a mail; the Http listener (`handleResponse`), the report callback (`handleReportedException`), `guard()`, `inspectResponse()` and `check()` all end there.
+- [ApiKeyAlertManager](src/ApiKeyAlertManager.php) is a singleton and holds every decision: `failed()` and `recovered()` are the only paths to a mail (plus `test()`, which mails on purpose and skips the cache); the Http listener (`handleResponse`), the report callback (`handleReportedException`), `guard()`, `inspectResponse()` and `check()` all end there.
 - [ApiKeyAlertConfig](src/Support/ApiKeyAlertConfig.php) is the only place that reads the package config. `tests/Feature/PackageTest.php` walks `src/` and `resources/` for `config('api-key-alert.…')`.
 - Detectors implement [Detector](src/Detectors/Detector.php). They run on every response from a service's hosts, so they return early and only decode a body when the status or a `str_contains` calls for it.
 - State lives in the default cache store: `api-key-alert:down:{service}` (the outage, 30 days) and `api-key-alert:alerted:{service}` (the throttle). `Cache::add()` and the return value of `Cache::forget()` make sure two requests at once send one mail.
@@ -25,3 +25,4 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - The listener and the report callback are registered unconditionally and check their switch on every call, so a config change in a test applies without booting again. The schedule entry reads `check.enabled` when the schedule is built.
 - Keep the public API compatible within 1.x: the list is in `CONTRIBUTING.md`. It includes the event properties and the cache key names, because host apps read them.
 - Never call a real API from a test. `TestCase` calls `Http::preventStrayRequests()`.
+- The environment check is a pseudo service named `ApiKeyAlertManager::ENVIRONMENT`; it reuses `failed()` and `recovered()` and only swaps the mailables (`failedMail()`, `recoveredMail()`). Testbench runs as `testing` with debug on, so tests that touch it set `app.env` and `app.debug` first.

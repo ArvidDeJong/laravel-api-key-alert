@@ -32,6 +32,31 @@ final class ApiKeyAlertConfig
         return self::enabled() && (bool) config('api-key-alert.check.enabled', false);
     }
 
+    public static function environmentCheckEnabled(): bool
+    {
+        return self::enabled() && (bool) config('api-key-alert.environment.check', false);
+    }
+
+    /**
+     * Whether anything is scheduled: the daily check of the keys, the environment check, or both.
+     */
+    public static function scheduleEnabled(): bool
+    {
+        return self::checkEnabled() || self::environmentCheckEnabled();
+    }
+
+    /**
+     * The settings the environment check compares, as config key => expected value.
+     *
+     * @return array<string, mixed>
+     */
+    public static function expectedEnvironment(): array
+    {
+        $expected = config('api-key-alert.environment.expected', []);
+
+        return is_array($expected) ? array_filter($expected, 'is_string', ARRAY_FILTER_USE_KEY) : [];
+    }
+
     /**
      * Time of day the daily check runs, as "HH:MM".
      */
@@ -151,7 +176,7 @@ final class ApiKeyAlertConfig
 
         $query = self::stringMap($check['query'] ?? []);
         $headers = self::stringMap($check['headers'] ?? []);
-        $token = array_key_exists('token', $check) ? trim((string) $check['token']) : null;
+        $token = array_key_exists('token', $check) ? self::resolveValue($check['token']) : null;
 
         // A missing key shows up as an empty value; asking with it would only report a false alarm.
         if ($query === null || $headers === null || $token === '') {
@@ -186,6 +211,19 @@ final class ApiKeyAlertConfig
     }
 
     /**
+     * A check value as a string. "config:services.google.key" reads that config key of the app when
+     * the check runs, so a key the app already has in its config is not written down a second time.
+     */
+    private static function resolveValue(mixed $value): string
+    {
+        if (is_string($value) && str_starts_with($value, 'config:')) {
+            $value = config(substr($value, strlen('config:')));
+        }
+
+        return is_scalar($value) ? trim((string) $value) : '';
+    }
+
+    /**
      * Cast every value to a string, or null when one of them is empty.
      *
      * @return array<string, string>|null
@@ -195,7 +233,7 @@ final class ApiKeyAlertConfig
         $map = [];
 
         foreach ((array) $values as $name => $value) {
-            $value = trim((string) $value);
+            $value = self::resolveValue($value);
 
             if ($value === '') {
                 return null;

@@ -9,7 +9,20 @@ description: Work with darvis/laravel-api-key-alert. Use it to get alerted when 
 
 Use this skill in an application that has `darvis/laravel-api-key-alert` installed when you add or
 change a call to an external API, when an API key alert arrives or fails to arrive, when a test
-sends an unexpected alert mail, or when you add an API the package does not know yet.
+sends an unexpected alert mail, when someone asks which keys are down, or when you add an API the
+package does not know yet.
+
+## Commands
+
+| Command | Does | Costs |
+| --- | --- | --- |
+| `api-key-alert:status [--json]` | Lists every service with `ok` or `failing`, since when and why; exits 1 when a key is failing | Reads the cache only |
+| `api-key-alert:test [service]` | Sends a test alert and a test recovery mail straight away, without cache, throttle, queue or events | One mail |
+| `api-key-alert:check [service...]` | Sends one request per service with a `check` and reports `ok`, `failed`, `skipped` or `inconclusive`; includes `environment` when that check is on, or when named | One API call per service |
+
+Start with `api-key-alert:status` when a user asks about the state of a key, and with
+`api-key-alert:test` when the question is whether the mail works at all. In code,
+`ApiKeyAlert::failure($service)` returns a `Failure` (`service`, `reason`, `since`) or null.
 
 ## How it works
 
@@ -28,6 +41,15 @@ After a detection: the reason and context are stripped of keys, the outage is ca
 (`api-key-alert:down:{service}`, 30 days), `ApiKeyFailed` fires, and only the first detection in the
 throttle window (`api-key-alert:alerted:{service}`) logs a warning and mails. A later 2xx or a passing
 guard or check fires `ApiKeyRecovered`, mails once and resets the window.
+
+## Environment check
+
+`API_KEY_ALERT_ENVIRONMENT_CHECK=true` makes the daily check compare config keys with expected
+values (`app.debug` => false, `app.env` => 'production' by default; edit `environment.expected` in
+the published config to add keys, the comparison is strict). A wrong value mails
+`EnvironmentFailedMail` on every daily check until it is fixed, then `EnvironmentRecoveredMail` once.
+The alert is the service `environment`, so `isFailing('environment')`, `failure('environment')` and
+the events work. Don't configure a service with that name. `ApiKeyAlert::checkEnvironment()` runs it.
 
 ## Adding an API
 
