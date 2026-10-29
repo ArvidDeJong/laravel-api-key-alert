@@ -40,6 +40,28 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Environment check
+    |--------------------------------------------------------------------------
+    |
+    | Checks once a day, with the daily check, that the settings under
+    | "expected" have the value they should have on this server, such as
+    | APP_DEBUG that was left on after a deploy. Off by default; turn it on in
+    | the .env of the server where these values must hold. Every daily check
+    | that still finds a wrong value mails again, and one mail follows once
+    | everything is right. The alert uses the service name "environment".
+    |
+    */
+
+    'environment' => [
+        'check' => (bool) env('API_KEY_ALERT_ENVIRONMENT_CHECK', false),
+        'expected' => [
+            'app.debug' => false,
+            'app.env' => 'production',
+        ],
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
     | Mail
     |--------------------------------------------------------------------------
     |

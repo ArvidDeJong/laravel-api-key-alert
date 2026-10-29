@@ -6,9 +6,12 @@ use Darvis\LaravelApiKeyAlert\Events\ApiKeyFailed;
 use Darvis\LaravelApiKeyAlert\Events\ApiKeyRecovered;
 use Darvis\LaravelApiKeyAlert\Mail\ApiKeyFailedMail;
 use Darvis\LaravelApiKeyAlert\Mail\ApiKeyRecoveredMail;
+use Darvis\LaravelApiKeyAlert\Mail\EnvironmentFailedMail;
+use Darvis\LaravelApiKeyAlert\Mail\EnvironmentRecoveredMail;
 use Darvis\LaravelApiKeyAlert\Support\ApiKeyAlertConfig;
 use Darvis\LaravelApiKeyAlert\Support\CheckResult;
 use Darvis\LaravelApiKeyAlert\Support\CheckStatus;
+use Darvis\LaravelApiKeyAlert\Support\Failure;
 use Darvis\LaravelApiKeyAlert\Support\Redactor;
 use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Http\Client\Events\ResponseReceived;
@@ -30,6 +33,11 @@ use Throwable;
  */
 class ApiKeyAlertManager
 {
+    /**
+     * The service name of the environment check. Reserved: don't configure a service with it.
+     */
+    public const ENVIRONMENT = 'environment';
+
     /**
      * Set while an alert is handled or sent. Sending the mail can itself call an API (a mail
      * driver over HTTP); without this flag a dead key of that API would alert about itself
@@ -73,7 +81,7 @@ class ApiKeyAlertManager
             if ($alerted) {
                 Log::warning("API key alert: {$service} rejected the API key", ['reason' => $reason] + $context);
 
-                $this->deliver(new ApiKeyFailedMail($service, $reason, $context + $this->environment(), ApiKeyAlertConfig::throttleMinutes()));
+                $this->deliver($this->failedMail($service, $reason, $context + $this->environment()));
             }
         } catch (Throwable $e) {
             $this->logOwnError($e);
@@ -109,7 +117,7 @@ class ApiKeyAlertManager
 
             Log::info("API key alert: {$service} accepts the API key again");
 
-            $this->deliver(new ApiKeyRecoveredMail($service, $since, $this->environment()));
+            $this->deliver($this->recoveredMail($service, $since, $this->environment()));
         } catch (Throwable $e) {
             $this->logOwnError($e);
         } finally {
@@ -123,6 +131,43 @@ class ApiKeyAlertManager
     public function isFailing(string $service): bool
     {
         return Cache::has($this->downKey($service));
+    }
+
+    /**
+     * The current failure of the service, or null when its key works.
+     */
+    public function failure(string $service): ?Failure
+    {
+        $down = Cache::get($this->downKey($service));
+
+        if (! is_array($down)) {
+            return null;
+        }
+
+        return new Failure(
+            $service,
+            is_string($down['reason'] ?? null) ? $down['reason'] : '',
+            is_string($down['since'] ?? null) ? $down['since'] : null,
+        );
+    }
+
+    /**
+     * Send a test alert and a test recovery mail right away, without touching the cache, the
+     * throttle or the events. Returns false when there are no recipients or the mailer failed.
+     */
+    public function test(string $service = 'test'): bool
+    {
+        $recipients = ApiKeyAlertConfig::mailTo();
+
+        if ($recipients === []) {
+            return false;
+        }
+
+        $context = ['source' => 'api-key-alert:test'] + $this->environment();
+        $since = now()->subMinutes(5)->toDateTimeString();
+
+        return $this->send($recipients, new ApiKeyFailedMail($service, 'This is a test alert. The key of '.$service.' is fine.', $context, ApiKeyAlertConfig::throttleMinutes()))
+            && $this->send($recipients, new ApiKeyRecoveredMail($service, $since, $this->environment()));
     }
 
     /**
@@ -223,6 +268,46 @@ class ApiKeyAlertManager
         }
 
         return new CheckResult($service, CheckStatus::Inconclusive, "HTTP {$response->status()}");
+    }
+
+    /**
+     * Compare the settings under "environment.expected" with the live config, for a server that
+     * was deployed with APP_DEBUG still on or APP_ENV still "local". Every call that finds a wrong
+     * value reports it again, so the daily check keeps reminding until it is fixed.
+     */
+    public function checkEnvironment(): CheckResult
+    {
+        $expected = ApiKeyAlertConfig::expectedEnvironment();
+
+        if ($expected === []) {
+            return new CheckResult(self::ENVIRONMENT, CheckStatus::Skipped);
+        }
+
+        $wrong = [];
+
+        foreach ($expected as $key => $value) {
+            $actual = config($key);
+
+            if ($actual !== $value) {
+                $wrong[$key] = ['actual' => $actual, 'expected' => $value];
+            }
+        }
+
+        if ($wrong === []) {
+            $this->recovered(self::ENVIRONMENT);
+
+            return new CheckResult(self::ENVIRONMENT, CheckStatus::Ok);
+        }
+
+        $reason = implode('; ', array_map(
+            fn (string $key, array $setting): string => $key.' is '.json_encode($setting['actual']).', expected '.json_encode($setting['expected']),
+            array_keys($wrong),
+            $wrong,
+        ));
+
+        $this->failed(self::ENVIRONMENT, $reason, ['settings' => $wrong, 'source' => 'daily check']);
+
+        return new CheckResult(self::ENVIRONMENT, CheckStatus::Failed, $reason);
     }
 
     /**
@@ -333,6 +418,30 @@ class ApiKeyAlertManager
     }
 
     /**
+     * @param  array<string, mixed>  $context
+     */
+    private function failedMail(string $service, string $reason, array $context): Mailable
+    {
+        if ($service === self::ENVIRONMENT) {
+            return new EnvironmentFailedMail($reason, $context);
+        }
+
+        return new ApiKeyFailedMail($service, $reason, $context, ApiKeyAlertConfig::throttleMinutes());
+    }
+
+    /**
+     * @param  array<string, mixed>  $context
+     */
+    private function recoveredMail(string $service, ?string $since, array $context): Mailable
+    {
+        if ($service === self::ENVIRONMENT) {
+            return new EnvironmentRecoveredMail($since, $context);
+        }
+
+        return new ApiKeyRecoveredMail($service, $since, $context);
+    }
+
+    /**
      * Send the mail without slowing down the request that found the failure: through the
      * queue when configured, else after the response is sent, or right away in the console.
      */
@@ -364,15 +473,19 @@ class ApiKeyAlertManager
     /**
      * @param  array<int, string>  $recipients
      */
-    private function send(array $recipients, Mailable $mail): void
+    private function send(array $recipients, Mailable $mail): bool
     {
         $wasBusy = $this->busy;
         $this->busy = true;
 
         try {
             Mail::to($recipients)->send($mail);
+
+            return true;
         } catch (Throwable $e) {
             $this->logOwnError($e);
+
+            return false;
         } finally {
             $this->busy = $wasBusy;
         }

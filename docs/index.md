@@ -32,7 +32,11 @@ That is the whole setup for Google, OpenAI, Anthropic, Mollie and MessageBird.
   [reported exceptions](detection.md#reported-exceptions),
   a [guard around a call](detection.md#guarding-a-call) and a [daily check](daily-check.md).
 - **Events** (`ApiKeyFailed`, `ApiKeyRecovered`) for Slack, a dashboard or a counter.
+- **Two commands**: `api-key-alert:status` shows which keys are down, `api-key-alert:test` sends a
+  test mail.
 - **Google Maps support** that reads the HTTP 200 `REQUEST_DENIED` answer a status code check misses.
+- **An [environment check](environment-check.md)** that reminds you every day while `APP_DEBUG` or
+  `APP_ENV` has a value it should not have on that server, and mails once it is fixed.
 
 ## Documentation
 
@@ -41,6 +45,9 @@ That is the whole setup for Google, OpenAI, Anthropic, Mollie and MessageBird.
 - [Configuration](configuration.md)
 - [Adding a service](custom-services.md)
 - [Daily check](daily-check.md)
+- [Environment check](environment-check.md)
+- [Commands](commands.md)
+- [Recipes](recipes.md)
 - [Testing](testing.md)
 - [Troubleshooting](troubleshooting.md)
 - [FAQ](faq.md)

@@ -11,6 +11,24 @@ return [
         'throttle' => 'You get at most one mail per hour about this service, and a mail once the key works again.|You get at most one mail per :hours hours about this service, and a mail once the key works again.',
     ],
 
+    'environment' => [
+        'failed' => [
+            'heading' => 'The environment settings of :app are wrong',
+            'intro' => ':app runs with settings that should not be active on this server:',
+            'next_steps' => 'Open the .env file on the server, correct the values and run "php artisan config:clear" (or "config:cache" if the config is cached).',
+            'next_steps_heading' => 'What to do',
+            'reminder' => 'You get this mail again after every daily check that still finds a wrong setting, and once more when everything is right.',
+            'setting' => 'is :actual, expected :expected',
+            'subject' => '[:app] The environment settings are wrong',
+        ],
+        'recovered' => [
+            'heading' => 'The environment settings of :app are right again',
+            'intro' => 'Every setting the environment check watches has its expected value again.',
+            'since' => 'They were wrong from :since.',
+            'subject' => '[:app] The environment settings are right again',
+        ],
+    ],
+
     'fields' => [
         'app' => 'Application',
         'app_url' => 'URL',

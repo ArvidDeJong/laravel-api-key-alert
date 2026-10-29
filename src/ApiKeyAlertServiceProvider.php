@@ -3,6 +3,8 @@
 namespace Darvis\LaravelApiKeyAlert;
 
 use Darvis\LaravelApiKeyAlert\Console\CheckCommand;
+use Darvis\LaravelApiKeyAlert\Console\StatusCommand;
+use Darvis\LaravelApiKeyAlert\Console\TestCommand;
 use Darvis\LaravelApiKeyAlert\Support\ApiKeyAlertConfig;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Contracts\Debug\ExceptionHandler;
@@ -39,7 +41,7 @@ class ApiKeyAlertServiceProvider extends ServiceProvider
         });
 
         if ($this->app->runningInConsole()) {
-            $this->commands([CheckCommand::class]);
+            $this->commands([CheckCommand::class, StatusCommand::class, TestCommand::class]);
 
             $this->publishes([
                 __DIR__.'/../config/api-key-alert.php' => config_path('api-key-alert.php'),
@@ -55,7 +57,7 @@ class ApiKeyAlertServiceProvider extends ServiceProvider
         }
 
         $this->callAfterResolving(Schedule::class, function (Schedule $schedule): void {
-            if (ApiKeyAlertConfig::checkEnabled()) {
+            if (ApiKeyAlertConfig::scheduleEnabled()) {
                 $schedule->command(CheckCommand::class)->dailyAt(ApiKeyAlertConfig::checkTime());
             }
         });

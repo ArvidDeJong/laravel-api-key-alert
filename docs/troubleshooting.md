@@ -1,12 +1,16 @@
 ---
 title: Troubleshooting
-nav_order: 8
+nav_order: 11
 description: "Why an alert did not arrive, came twice or came for the wrong reason, and how to fix the Google REQUEST_DENIED alert."
 ---
 
 # Troubleshooting
 
 ## No mail arrives
+
+Run `php artisan api-key-alert:test` first. It sends a test alert to the configured recipients
+without the cache or the throttle in between, so it tells you whether the mailer and the address
+work at all.
 
 - `API_KEY_ALERT_MAIL_TO` is empty or not a valid address. The log then says
   "API key alert: no recipients".
@@ -21,8 +25,8 @@ description: "Why an alert did not arrive, came twice or came for the wrong reas
 ## A recovery mail never comes
 
 Recovery needs a successful response from the same service after the failure. The outage is kept in
-the cache for 30 days; clearing the cache in between forgets it. Run `php artisan api-key-alert:check`
-to test the key on demand.
+the cache for 30 days; clearing the cache in between forgets it. `php artisan api-key-alert:status`
+shows what the package currently thinks; `php artisan api-key-alert:check` tests the key on demand.
 
 ## Every server sends its own mail
 
