@@ -2,7 +2,7 @@ blank_issues_enabled: false
 contact_links:
   - name: Security issue
     url: https://github.com/ArvidDeJong/laravel-api-key-alert/security/advisories/new
-    about: Report a way around the honeypot privately.
+    about: Report a leaked API key or another security issue privately.
   - name: Documentation
     url: https://ArvidDeJong.github.io/laravel-api-key-alert/
     about: Usage, configuration, testing and known limits.

@@ -1,0 +1,61 @@
+- q: What does darvis/laravel-api-key-alert do?
+  a: >
+    It mails you when an API key of your Laravel app stops working: revoked, expired, restricted
+    to the wrong IP address, or out of credit. It finds out from the calls your app already makes,
+    so you hear about it before a customer or a colleague does, and it mails once more when the
+    key works again.
+
+- q: Do I have to change my code to use it?
+  a: >
+    No. After installing, set API_KEY_ALERT_MAIL_TO. Calls through the Laravel Http client and
+    reported exceptions are inspected automatically for Google, OpenAI, Anthropic, Mollie and
+    MessageBird. You only add code for an SDK whose errors never reach report(); wrap that call
+    in ApiKeyAlert::guard().
+
+- q: Why does a Google Maps key failure not show up as an error?
+  a: >
+    Google Maps web services (Geocoding, Directions, Places) answer a rejected key with HTTP 200
+    and the status REQUEST_DENIED in the body. A check on the status code never sees it. The
+    package ships a GoogleDetector that reads the body, and its message names the IP address the
+    request came from, which is what you add to the key restrictions.
+
+- q: How many mails will I get when a key breaks?
+  a: >
+    One per service per throttle window, six hours by default, however many requests fail in that
+    time. A recovery mail follows once the key works again, and that resets the window, so a key
+    that breaks a second time is reported straight away.
+
+- q: Does the alert mail contain my API key?
+  a: >
+    No. Keys are removed from URLs, messages and context before anything is mailed, logged or
+    passed to an event: secret query parameters such as key and token, bearer tokens, and the key
+    formats of Google, OpenAI, Anthropic and Mollie.
+
+- q: Does it make extra API calls?
+  a: >
+    Only if you turn on the daily check (API_KEY_ALERT_CHECK=true). That sends one cheap request per
+    service a day, such as one geocode for Google. Passive detection reads the responses your app
+    already receives and costs nothing.
+
+- q: Can it slow down my pages?
+  a: >
+    The listener only looks at responses from hosts of a configured service, and only decodes a body
+    when the status or a quick string check calls for it. The mail is sent after the response has
+    gone to the visitor, or through the queue when API_KEY_ALERT_MAIL_QUEUE is true.
+
+- q: How do I add an API the package does not know?
+  a: >
+    Add a service with its hosts to config/api-key-alert.php. HTTP 401 and 403 are then reported. If
+    the API signals a rejected key differently, write a class that implements the Detector interface
+    and set it as the service's detector.
+
+- q: Can I get the alert in Slack instead of by mail?
+  a: >
+    Listen to the ApiKeyFailed and ApiKeyRecovered events and send it wherever you like. Leave
+    API_KEY_ALERT_MAIL_TO empty if you don't want the mail.
+
+- q: How do I test code that uses it?
+  a: >
+    Use Mail::fake() and Http::fake() as usual. A faked Http response goes through the same listener
+    as a real one, so a fake 401 from api.openai.com sends the alert mail. Assert on
+    ApiKeyFailedMail, or fake the ApiKeyFailed event.

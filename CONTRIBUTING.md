@@ -17,7 +17,7 @@ composer install
 
 composer test      # Pest
 composer lint      # Pint, check only (composer format fixes)
-composer analyse   # Larastan, level 5
+composer analyse   # Larastan, level 8
 ```
 
 CI runs the tests on PHP 8.2-8.4 with Laravel 11, 12 and 13, on the lowest and the latest dependencies.
@@ -25,7 +25,9 @@ CI runs the tests on PHP 8.2-8.4 with Laravel 11, 12 and 13, on the lowest and t
 ## Pull requests
 
 - Add or update tests for every change in behaviour.
-- Keep the public API compatible within 1.x: `generate()`, `validate()`, `validateHoneypot()`, `resetHoneypot()` and the `hp_*` properties.
+- Keep the public API compatible within 1.x: the public methods of `ApiKeyAlertManager` and the `ApiKeyAlert` facade (`failed()`, `recovered()`, `isFailing()`, `guard()`, `inspectResponse()`, `check()`), the `Detector` interface and the protected `$statuses`, `$deniedStatuses` and `messageFrom()` of the shipped detectors, the properties of `ApiKeyFailed`, `ApiKeyRecovered`, `CheckResult` and the mailables, the `CheckStatus` cases, the config keys, the `api-key-alert:check` command and its exit codes, the cache key names and the wording of the log lines.
+- Read settings through `Support\ApiKeyAlertConfig`, never with `config('api-key-alert.…')`.
+- Nothing may throw into the host app, except `guard()`, which always throws the callback's exception again.
 - Write code, comments and messages in English. New translation keys go into both `resources/lang/en` and `resources/lang/nl`.
 - Update `docs/`, `CHANGELOG.md` (under `Unreleased`) and `resources/boost/` when users will notice the change.
 - The documentation in `docs/` is also the website. Don't write `{{ }}` or `{% %}` there; Jekyll would render it.
