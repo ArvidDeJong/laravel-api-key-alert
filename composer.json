@@ -1,0 +1,75 @@
+{
+    "name": "darvis/laravel-api-key-alert",
+    "description": "Get an email the moment an API key stops working in Laravel: detects rejected keys in Http client calls, reported exceptions, wrapped calls and a daily check, for Google, OpenAI, Anthropic, Mollie and any API you add.",
+    "type": "library",
+    "license": "MIT",
+    "homepage": "https://arviddejong.github.io/laravel-api-key-alert/",
+    "keywords": [
+        "laravel",
+        "api-key",
+        "monitoring",
+        "alert",
+        "notification",
+        "health-check",
+        "google-maps",
+        "openai",
+        "mollie",
+        "laravel-boost"
+    ],
+    "authors": [
+        {
+            "name": "Arvid de Jong",
+            "email": "info@arvid.nl"
+        }
+    ],
+    "support": {
+        "issues": "https://github.com/ArvidDeJong/laravel-api-key-alert/issues",
+        "source": "https://github.com/ArvidDeJong/laravel-api-key-alert",
+        "docs": "https://arviddejong.github.io/laravel-api-key-alert/"
+    },
+    "require": {
+        "php": "^8.2",
+        "laravel/framework": "^11.0|^12.0|^13.0"
+    },
+    "require-dev": {
+        "larastan/larastan": "^3.0",
+        "laravel/pint": "^1.0",
+        "orchestra/testbench": "^9.0|^10.0|^11.0",
+        "pestphp/pest": "^3.0|^4.0",
+        "pestphp/pest-plugin-laravel": "^3.0|^4.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "Darvis\\LaravelApiKeyAlert\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Darvis\\LaravelApiKeyAlert\\Tests\\": "tests/"
+        }
+    },
+    "scripts": {
+        "test": "pest tests",
+        "lint": "pint --test",
+        "format": "pint",
+        "analyse": "phpstan analyse --memory-limit=1G"
+    },
+    "config": {
+        "sort-packages": true,
+        "allow-plugins": {
+            "pestphp/pest-plugin": true
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Darvis\\LaravelApiKeyAlert\\ApiKeyAlertServiceProvider"
+            ],
+            "aliases": {
+                "ApiKeyAlert": "Darvis\\LaravelApiKeyAlert\\Facades\\ApiKeyAlert"
+            }
+        }
+    },
+    "minimum-stability": "stable",
+    "prefer-stable": true
+}
