@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [1.1.0] - 2026-10-29
+
 ### Added
 - `api-key-alert:status`, which lists every service with `ok` or `failing`, since when and the
   provider's reason, from the cache and without API calls. It exits with a failure when a key is
@@ -46,5 +48,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 - Mails in English and Dutch.
 - Laravel Boost guideline and skill.
 
-[Unreleased]: https://github.com/ArvidDeJong/laravel-api-key-alert/compare/v1.0.0...HEAD
+[Unreleased]: https://github.com/ArvidDeJong/laravel-api-key-alert/compare/v1.1.0...HEAD
+[1.1.0]: https://github.com/ArvidDeJong/laravel-api-key-alert/compare/v1.0.0...v1.1.0
 [1.0.0]: https://github.com/ArvidDeJong/laravel-api-key-alert/releases/tag/v1.0.0
