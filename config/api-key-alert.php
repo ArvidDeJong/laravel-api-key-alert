@@ -78,6 +78,30 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Required keys
+    |--------------------------------------------------------------------------
+    |
+    | Checks once a day, with the daily check, that none of these values is
+    | empty, so a key that was never set on a server or went missing in a
+    | deploy is found before a visitor runs into it. Name => value: use
+    | env('...') so it also works with a cached config, or a "config:"
+    | reference. Off by default. Every daily check that still finds an empty
+    | value mails again, and one mail follows once every key is set. The mail
+    | only names the keys, never a value. The alert uses the service name
+    | "missing-keys".
+    |
+    */
+
+    'required' => [
+        'check' => (bool) env('API_KEY_ALERT_REQUIRED_CHECK', false),
+        'keys' => [
+            // 'MOLLIE_KEY' => env('MOLLIE_KEY'),
+            // 'Google Maps' => 'config:services.google.key',
+        ],
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
     | Services
     |--------------------------------------------------------------------------
     |

@@ -64,6 +64,12 @@
     by default) and mails you every day they are wrong, plus once more when they are right again.
     Any config key can be added to the list.
 
+- q: Can it tell me when an API key is missing on a server?
+  a: >
+    Yes. Set API_KEY_ALERT_REQUIRED_CHECK=true and list the keys under required.keys in the config,
+    as name => env('NAME'). Once a day the package mails you every key that is empty, every day until
+    it is set, plus once more when every key has a value. The mail only names the keys, never a value.
+
 - q: How do I see which keys are down right now?
   a: >
     Run php artisan api-key-alert:status. It reads the cache, so it costs no API calls, and it

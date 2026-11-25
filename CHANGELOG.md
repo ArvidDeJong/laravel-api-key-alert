@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [1.2.0] - 2026-11-25
+
+### Added
+- A missing keys check: `API_KEY_ALERT_REQUIRED_CHECK=true` makes the daily check look at the values
+  under the new `required.keys` (name => `env('NAME')` or a `config:` reference, empty by default) and
+  mail `MissingKeysFailedMail` with the names of the empty keys on every daily check until they are
+  set, then `MissingKeysRecoveredMail` once. The mail never contains a value. The alert is the service
+  `missing-keys`, so `isFailing()`, `failure()`, the events and `api-key-alert:status` cover it, and
+  `api-key-alert:check missing-keys` runs it by hand. `ApiKeyAlert::checkRequiredKeys()` behind it.
+- Documentation: the page "Missing keys", a FAQ answer, and the option on the configuration page.
+
 ## [1.1.0] - 2026-10-29
 
 ### Added
@@ -48,6 +59,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 - Mails in English and Dutch.
 - Laravel Boost guideline and skill.
 
-[Unreleased]: https://github.com/ArvidDeJong/laravel-api-key-alert/compare/v1.1.0...HEAD
+[Unreleased]: https://github.com/ArvidDeJong/laravel-api-key-alert/compare/v1.2.0...HEAD
+[1.2.0]: https://github.com/ArvidDeJong/laravel-api-key-alert/compare/v1.1.0...v1.2.0
 [1.1.0]: https://github.com/ArvidDeJong/laravel-api-key-alert/compare/v1.0.0...v1.1.0
 [1.0.0]: https://github.com/ArvidDeJong/laravel-api-key-alert/releases/tag/v1.0.0

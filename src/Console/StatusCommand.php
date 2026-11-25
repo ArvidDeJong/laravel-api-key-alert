@@ -10,7 +10,7 @@ class StatusCommand extends Command
 {
     protected $signature = 'api-key-alert:status {--json : Print the status as JSON}';
 
-    protected $description = 'Show which API keys are currently reported as rejected, and whether the environment settings are right';
+    protected $description = 'Show which API keys are currently reported as rejected, and whether the required keys are set and the environment settings are right';
 
     public function handle(ApiKeyAlertManager $alert): int
     {
@@ -18,6 +18,10 @@ class StatusCommand extends Command
 
         if (ApiKeyAlertConfig::environmentCheckEnabled()) {
             $names[] = ApiKeyAlertManager::ENVIRONMENT;
+        }
+
+        if (ApiKeyAlertConfig::requiredKeysCheckEnabled()) {
+            $names[] = ApiKeyAlertManager::MISSING_KEYS;
         }
 
         $status = [];

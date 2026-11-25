@@ -41,6 +41,23 @@ return [
         'url' => 'Verzoek',
     ],
 
+    'missing_keys' => [
+        'failed' => [
+            'heading' => 'Er ontbreken API-sleutels van :app',
+            'intro' => ':app draait op deze server zonder waarde voor deze sleutels:',
+            'next_steps' => 'Zet de sleutels in het .env-bestand op de server en draai "php artisan config:clear" (of "config:cache" als de config gecachet is).',
+            'next_steps_heading' => 'Wat te doen',
+            'reminder' => 'Je krijgt deze mail opnieuw na elke dagelijkse controle die nog een ontbrekende sleutel vindt, en nog één keer zodra elke sleutel er is.',
+            'subject' => '[:app] Er ontbreken API-sleutels',
+        ],
+        'recovered' => [
+            'heading' => 'Elke API-sleutel van :app is er weer',
+            'intro' => 'Elke sleutel die de controle op ontbrekende sleutels bewaakt heeft weer een waarde.',
+            'since' => 'Er ontbraken sleutels vanaf :since.',
+            'subject' => '[:app] Elke API-sleutel is er weer',
+        ],
+    ],
+
     'recovered' => [
         'heading' => 'De API-sleutel van :service werkt weer',
         'intro' => ':service accepteert de API-sleutel van :app weer.',

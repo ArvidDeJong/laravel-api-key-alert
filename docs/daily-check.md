@@ -15,13 +15,14 @@ API_KEY_ALERT_CHECK_TIME=07:00
 ```
 
 The check is added to the scheduler, so `schedule:run` has to run every minute (on Plesk: a
-Scheduled Task that runs `artisan schedule:run`). The [environment check](environment-check.md) runs
-in the same scheduled command, at the same time.
+Scheduled Task that runs `artisan schedule:run`). The [environment check](environment-check.md) and
+the [missing keys check](required-keys.md) run in the same scheduled command, at the same time.
 
 ## The keys it uses
 
 The shipped checks read these environment variables. A check whose key is empty is skipped, so
-nothing is checked until you set one.
+nothing is checked until you set one. To be told when a key is empty, list it in the
+[missing keys check](required-keys.md).
 
 | Service | Variable | Request |
 | --- | --- | --- |

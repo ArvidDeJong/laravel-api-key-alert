@@ -1,6 +1,6 @@
 ---
 title: Commands
-nav_order: 8
+nav_order: 9
 description: "The three artisan commands: api-key-alert:status to see which keys are down, api-key-alert:test to send a test mail, and api-key-alert:check to test the keys now."
 ---
 
@@ -73,4 +73,5 @@ Sends one request per service that has a `check` and reports the result. This is
 [daily check](daily-check.md) schedules; that page has the details and the keys it uses. When the
 [environment check](environment-check.md) is on, a row `environment` is part of the full run; ask for
 it alone with `api-key-alert:check environment`, which also works while the check is off. The
-`environment` row shows up in `api-key-alert:status` as well.
+`environment` row shows up in `api-key-alert:status` as well. The [missing keys check](required-keys.md)
+works the same way, with the row `missing-keys` and `api-key-alert:check missing-keys`.

@@ -41,6 +41,23 @@ return [
         'url' => 'Request',
     ],
 
+    'missing_keys' => [
+        'failed' => [
+            'heading' => 'API keys of :app are missing',
+            'intro' => ':app runs on this server without a value for these keys:',
+            'next_steps' => 'Add the keys to the .env file on the server and run "php artisan config:clear" (or "config:cache" if the config is cached).',
+            'next_steps_heading' => 'What to do',
+            'reminder' => 'You get this mail again after every daily check that still finds a missing key, and once more when every key is set.',
+            'subject' => '[:app] API keys are missing',
+        ],
+        'recovered' => [
+            'heading' => 'Every API key of :app is set again',
+            'intro' => 'Every key the required keys check watches has a value again.',
+            'since' => 'Keys were missing from :since.',
+            'subject' => '[:app] Every API key is set again',
+        ],
+    ],
+
     'recovered' => [
         'heading' => 'The :service API key works again',
         'intro' => ':service accepts the API key of :app again.',

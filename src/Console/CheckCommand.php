@@ -9,9 +9,9 @@ use Illuminate\Console\Command;
 
 class CheckCommand extends Command
 {
-    protected $signature = 'api-key-alert:check {service?* : Only check these services (or "environment")}';
+    protected $signature = 'api-key-alert:check {service?* : Only check these services (or "environment", "missing-keys")}';
 
-    protected $description = 'Check whether the configured API keys are still accepted and the environment settings are right';
+    protected $description = 'Check whether the configured API keys are still accepted, the required keys are set and the environment settings are right';
 
     public function handle(ApiKeyAlertManager $alert): int
     {
@@ -24,11 +24,20 @@ class CheckCommand extends Command
             $services[] = ApiKeyAlertManager::ENVIRONMENT;
         }
 
+        // The same for the required keys check.
+        if ($requested === [] && ApiKeyAlertConfig::requiredKeysCheckEnabled()) {
+            $services[] = ApiKeyAlertManager::MISSING_KEYS;
+        }
+
         $rows = [];
         $failed = false;
 
         foreach ($services as $service) {
-            $result = $service === ApiKeyAlertManager::ENVIRONMENT ? $alert->checkEnvironment() : $alert->check($service);
+            $result = match ($service) {
+                ApiKeyAlertManager::ENVIRONMENT => $alert->checkEnvironment(),
+                ApiKeyAlertManager::MISSING_KEYS => $alert->checkRequiredKeys(),
+                default => $alert->check($service),
+            };
             $failed = $failed || $result->status === CheckStatus::Failed;
 
             $rows[] = [$service, $result->status->value, $result->detail ?? ''];

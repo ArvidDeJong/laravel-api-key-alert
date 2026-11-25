@@ -18,7 +18,7 @@ package does not know yet.
 | --- | --- | --- |
 | `api-key-alert:status [--json]` | Lists every service with `ok` or `failing`, since when and why; exits 1 when a key is failing | Reads the cache only |
 | `api-key-alert:test [service]` | Sends a test alert and a test recovery mail straight away, without cache, throttle, queue or events | One mail |
-| `api-key-alert:check [service...]` | Sends one request per service with a `check` and reports `ok`, `failed`, `skipped` or `inconclusive`; includes `environment` when that check is on, or when named | One API call per service |
+| `api-key-alert:check [service...]` | Sends one request per service with a `check` and reports `ok`, `failed`, `skipped` or `inconclusive`; includes `environment` and `missing-keys` when those checks are on, or when named | One API call per service |
 
 Start with `api-key-alert:status` when a user asks about the state of a key, and with
 `api-key-alert:test` when the question is whether the mail works at all. In code,
@@ -51,6 +51,16 @@ the published config to add keys, the comparison is strict). A wrong value mails
 The alert is the service `environment`, so `isFailing('environment')`, `failure('environment')` and
 the events work. Don't configure a service with that name. `ApiKeyAlert::checkEnvironment()` runs it.
 
+
+## Missing keys
+
+`API_KEY_ALERT_REQUIRED_CHECK=true` makes the daily check look at `required.keys` in
+`config/api-key-alert.php`, a list of name => value (`'MOLLIE_KEY' => env('MOLLIE_KEY')`, or a
+`config:` reference). Every empty value is mailed by name in `MissingKeysFailedMail`, never with a
+value, on every daily check until it is set, then `MissingKeysRecoveredMail` once. The alert is the
+service `missing-keys`, so `isFailing('missing-keys')`, `failure('missing-keys')` and the events work.
+Don't configure a service with that name. `ApiKeyAlert::checkRequiredKeys()` runs it. Use `env()` in
+the config file, not at runtime, so it works with a cached config.
 ## Adding an API
 
 ```php
