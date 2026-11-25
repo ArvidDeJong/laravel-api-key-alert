@@ -17,6 +17,7 @@ use Illuminate\Support\Facades\Facade;
  * @method static bool inspectResponse(string $service, int $status, string $body, ?string $url = null)
  * @method static CheckResult check(string $service)
  * @method static CheckResult checkEnvironment()
+ * @method static CheckResult checkRequiredKeys()
  *
  * @see ApiKeyAlertManager
  */

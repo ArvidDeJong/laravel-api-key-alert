@@ -8,6 +8,8 @@ use Darvis\LaravelApiKeyAlert\Mail\ApiKeyFailedMail;
 use Darvis\LaravelApiKeyAlert\Mail\ApiKeyRecoveredMail;
 use Darvis\LaravelApiKeyAlert\Mail\EnvironmentFailedMail;
 use Darvis\LaravelApiKeyAlert\Mail\EnvironmentRecoveredMail;
+use Darvis\LaravelApiKeyAlert\Mail\MissingKeysFailedMail;
+use Darvis\LaravelApiKeyAlert\Mail\MissingKeysRecoveredMail;
 use Darvis\LaravelApiKeyAlert\Support\ApiKeyAlertConfig;
 use Darvis\LaravelApiKeyAlert\Support\CheckResult;
 use Darvis\LaravelApiKeyAlert\Support\CheckStatus;
@@ -37,6 +39,11 @@ class ApiKeyAlertManager
      * The service name of the environment check. Reserved: don't configure a service with it.
      */
     public const ENVIRONMENT = 'environment';
+
+    /**
+     * The service name of the required keys check. Reserved: don't configure a service with it.
+     */
+    public const MISSING_KEYS = 'missing-keys';
 
     /**
      * Set while an alert is handled or sent. Sending the mail can itself call an API (a mail
@@ -311,6 +318,35 @@ class ApiKeyAlertManager
     }
 
     /**
+     * Check that none of the values under "required.keys" is empty, for a server where a key was
+     * never set or went missing in a deploy. Only the names reach the reason and the mail, never
+     * a value. Every call that finds an empty key reports it again, so the daily check keeps
+     * reminding until every key is set.
+     */
+    public function checkRequiredKeys(): CheckResult
+    {
+        $keys = ApiKeyAlertConfig::requiredKeys();
+
+        if ($keys === []) {
+            return new CheckResult(self::MISSING_KEYS, CheckStatus::Skipped);
+        }
+
+        $missing = array_keys(array_filter($keys, fn (string $value): bool => $value === ''));
+
+        if ($missing === []) {
+            $this->recovered(self::MISSING_KEYS);
+
+            return new CheckResult(self::MISSING_KEYS, CheckStatus::Ok);
+        }
+
+        $reason = 'Missing: '.implode(', ', $missing);
+
+        $this->failed(self::MISSING_KEYS, $reason, ['keys' => $missing, 'source' => 'daily check']);
+
+        return new CheckResult(self::MISSING_KEYS, CheckStatus::Failed, $reason);
+    }
+
+    /**
      * Listener for every response of the Laravel Http client.
      *
      * @internal
@@ -426,6 +462,10 @@ class ApiKeyAlertManager
             return new EnvironmentFailedMail($reason, $context);
         }
 
+        if ($service === self::MISSING_KEYS) {
+            return new MissingKeysFailedMail($reason, $context);
+        }
+
         return new ApiKeyFailedMail($service, $reason, $context, ApiKeyAlertConfig::throttleMinutes());
     }
 
@@ -436,6 +476,10 @@ class ApiKeyAlertManager
     {
         if ($service === self::ENVIRONMENT) {
             return new EnvironmentRecoveredMail($since, $context);
+        }
+
+        if ($service === self::MISSING_KEYS) {
+            return new MissingKeysRecoveredMail($since, $context);
         }
 
         return new ApiKeyRecoveredMail($service, $since, $context);

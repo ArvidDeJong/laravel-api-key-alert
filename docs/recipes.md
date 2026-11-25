@@ -1,6 +1,6 @@
 ---
 title: Recipes
-nav_order: 9
+nav_order: 10
 description: "Working examples: an alert in Slack, a check for spatie/laravel-health, a warning in your admin, and a deploy that stops on a dead key."
 ---
 

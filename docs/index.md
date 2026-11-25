@@ -37,6 +37,8 @@ That is the whole setup for Google, OpenAI, Anthropic, Mollie and MessageBird.
 - **Google Maps support** that reads the HTTP 200 `REQUEST_DENIED` answer a status code check misses.
 - **An [environment check](environment-check.md)** that reminds you every day while `APP_DEBUG` or
   `APP_ENV` has a value it should not have on that server, and mails once it is fixed.
+- **A [missing keys check](required-keys.md)** that reminds you every day while a key the app needs
+  is empty on that server, and mails once every key is set.
 
 ## Documentation
 
@@ -46,6 +48,7 @@ That is the whole setup for Google, OpenAI, Anthropic, Mollie and MessageBird.
 - [Adding a service](custom-services.md)
 - [Daily check](daily-check.md)
 - [Environment check](environment-check.md)
+- [Missing keys](required-keys.md)
 - [Commands](commands.md)
 - [Recipes](recipes.md)
 - [Testing](testing.md)

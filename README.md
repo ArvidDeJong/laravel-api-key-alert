@@ -7,7 +7,7 @@
 
 Get an email the moment an API key stops working in your Laravel app, and again when it works. The package notices the rejected key in the calls your app already makes, so a revoked OpenAI key or a Google key restricted to the wrong IP address no longer waits for a customer to complain.
 
-It also watches your environment: turn on the environment check and you get a reminder every day that `APP_DEBUG` is still on or `APP_ENV` is still `local` on a server where it should not be, until you fix it.
+It also watches your environment: turn on the environment check and you get a reminder every day that `APP_DEBUG` is still on or `APP_ENV` is still `local` on a server where it should not be, until you fix it. And it tells you when a key you listed is missing on a server altogether.
 
 ## Features
 
@@ -16,6 +16,7 @@ It also watches your environment: turn on the environment check and you get a re
 - **One mail, not a hundred** - at most one per service per six hours, plus one when the key works again
 - **Four routes, each optional** - passive detection, reported exceptions, `ApiKeyAlert::guard()` around a call, and a daily check
 - **Environment check** - a daily reminder while `APP_DEBUG` or `APP_ENV` has a value it should not have on that server, and a mail when it is fixed
+- **Missing keys check** - a daily reminder while a key you listed is empty on that server, naming the key and never its value
 - **Two commands** - `api-key-alert:status` shows which keys are down (also as JSON), `api-key-alert:test` sends a test mail
 - **Never in the way** - the mail goes out after the response; a broken mailer never breaks a page
 - **Keys stay out of the mail** - secret parameters, bearer tokens and known key formats are removed
@@ -74,6 +75,12 @@ API_KEY_ALERT_CHECK=true
 API_KEY_ALERT_ENVIRONMENT_CHECK=true
 ```
 
+Get reminded while a key the app needs is empty on a server: list it under `required.keys` in the config (`'MOLLIE_KEY' => env('MOLLIE_KEY')`) and set
+
+```dotenv
+API_KEY_ALERT_REQUIRED_CHECK=true
+```
+
 Both run once a day through the scheduler. The expected values live in the config, so they are yours to change.
 
 ## Documentation
@@ -86,6 +93,7 @@ Full documentation: **https://arviddejong.github.io/laravel-api-key-alert/**
 - [Adding a service](https://arviddejong.github.io/laravel-api-key-alert/custom-services.html)
 - [Daily check](https://arviddejong.github.io/laravel-api-key-alert/daily-check.html)
 - [Environment check](https://arviddejong.github.io/laravel-api-key-alert/environment-check.html)
+- [Missing keys](https://arviddejong.github.io/laravel-api-key-alert/required-keys.html)
 - [Commands](https://arviddejong.github.io/laravel-api-key-alert/commands.html)
 - [Recipes](https://arviddejong.github.io/laravel-api-key-alert/recipes.html)
 - [Testing](https://arviddejong.github.io/laravel-api-key-alert/testing.html)

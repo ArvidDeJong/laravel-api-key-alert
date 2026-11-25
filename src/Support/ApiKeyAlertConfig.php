@@ -37,12 +37,43 @@ final class ApiKeyAlertConfig
         return self::enabled() && (bool) config('api-key-alert.environment.check', false);
     }
 
+    public static function requiredKeysCheckEnabled(): bool
+    {
+        return self::enabled() && (bool) config('api-key-alert.required.check', false);
+    }
+
     /**
-     * Whether anything is scheduled: the daily check of the keys, the environment check, or both.
+     * Whether anything is scheduled: the daily check of the keys, the environment check, the
+     * required keys check, or any combination.
      */
     public static function scheduleEnabled(): bool
     {
-        return self::checkEnabled() || self::environmentCheckEnabled();
+        return self::checkEnabled() || self::environmentCheckEnabled() || self::requiredKeysCheckEnabled();
+    }
+
+    /**
+     * The keys the required keys check watches, as name => value with "config:" references
+     * resolved. An empty string means the key is missing.
+     *
+     * @return array<string, string>
+     */
+    public static function requiredKeys(): array
+    {
+        $keys = config('api-key-alert.required.keys', []);
+
+        if (! is_array($keys)) {
+            return [];
+        }
+
+        $resolved = [];
+
+        foreach ($keys as $name => $value) {
+            if (is_string($name) && $name !== '') {
+                $resolved[$name] = self::resolveValue($value);
+            }
+        }
+
+        return $resolved;
     }
 
     /**

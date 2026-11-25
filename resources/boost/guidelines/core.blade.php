@@ -12,6 +12,7 @@ Mails `API_KEY_ALERT_MAIL_TO` when an API key is rejected, at most once per serv
 - In tests: `Mail::fake()` + `Http::fake()`, then assert `ApiKeyFailedMail` or fake the `ApiKeyFailed` event. Tests that fake a 401 for another reason send an alert; turn it off there with `config(['api-key-alert.enabled' => false])`.
 - Events: `ApiKeyFailed` (every detection, `alerted` tells whether a mail went out) and `ApiKeyRecovered`.
 - `API_KEY_ALERT_ENVIRONMENT_CHECK=true` adds a daily check that `app.debug` is false and `app.env` is `production` (the expected values are in `config/api-key-alert.php` under `environment.expected`); it mails again every day until fixed. Its alerts use the service name `environment`, which is reserved.
+- `API_KEY_ALERT_REQUIRED_CHECK=true` adds a daily check that none of the values under `required.keys` in `config/api-key-alert.php` is empty (name => `env('NAME')` or a `config:` reference). It mails the names of the empty keys, never a value, every day until they are set. Its alerts use the service name `missing-keys`, which is reserved. A key that is empty is skipped by the daily request check, so list the keys the app needs here to hear about them.
 - To see which keys are down, run `php artisan api-key-alert:status` (`--json` for data) or call `ApiKeyAlert::failure($service)`; it reads the cache and costs no API calls. `php artisan api-key-alert:check` tests the keys against the live APIs. `php artisan api-key-alert:test` sends a test mail without touching the cache; use it when a user asks whether the mail works.
 
 @verbatim

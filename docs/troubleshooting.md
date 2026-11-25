@@ -1,6 +1,6 @@
 ---
 title: Troubleshooting
-nav_order: 11
+nav_order: 12
 description: "Why an alert did not arrive, came twice or came for the wrong reason, and how to fix the Google REQUEST_DENIED alert."
 ---
 
